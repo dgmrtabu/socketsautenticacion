@@ -55,6 +55,8 @@ const login = async(req, res = response) => {
 
 
 const googleSignin = async(req, res = response) => {
+    
+    //console.log(req.body);
 
     const { id_token } = req.body;
     
@@ -63,12 +65,13 @@ const googleSignin = async(req, res = response) => {
 
         let usuario = await Usuario.findOne({ correo });
 
+
         if ( !usuario ) {
             // Tengo que crearlo
             const data = {
                 nombre,
                 correo,
-                password: ':P',
+                password: 'DDDDD',
                 img,
                 google: true
             };
