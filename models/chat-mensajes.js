@@ -25,7 +25,7 @@ class ChatMensajes {
         this.mensajes.unshift(new Mensaje(uid, nombre, mensaje));
     }
 
-    agregarUsuario() {
+    conectarUsuario(usuario) {
         this.usuarios[usuario.id] = usuario;
     }
 

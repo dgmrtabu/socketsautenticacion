@@ -13,4 +13,5 @@ module.exports = {
     Role,
     Server,
     Usuario,
+    ChatMensajes
 }
