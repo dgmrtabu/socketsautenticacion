@@ -47,11 +47,9 @@ const conectarSoket = async() => {
         console.log('Sockets offline');
     });
 
-    socket.on('recibir-mensaje', () => {
-        // TODO:
-    });
+    socket.on('recibir-mensajes', dibujarMensajes);
 
-    socket.on('usuarios-activos', ( payload ) => {
+    socket.on('usuarios-activos', (payload) => {
         // TODO:
         dibujarUsuario(payload);
     });
@@ -62,10 +60,10 @@ const conectarSoket = async() => {
 };
 
 
-const dibujarUsuario = (usuarios = []) =>{
-    
+const dibujarUsuario = (usuarios = []) => {
+
     let usersHtml = '';
-    usuarios.forEach(({ nombre, uid}) =>{
+    usuarios.forEach(({ nombre, uid }) => {
         usersHtml += `
         <li>
             <p>
@@ -79,10 +77,41 @@ const dibujarUsuario = (usuarios = []) =>{
     ulUsuarios.innerHTML = usersHtml;
 }
 
+const dibujarMensajes = (mensajes = []) => {
+
+    let mensajesHtml = '';
+    mensajes.forEach(({ nombre, mensaje }) => {
+        mensajesHtml += `
+        <li>
+            <p>
+                <h5 class="text-success">${nombre}</h5>
+                <span class="fs-6 text-muted">${mensaje}</span>
+            </p>
+        </li>
+        `;
+    });
+
+    ulMensajes.innerHTML = mensajesHtml;
+}
+
+txtMensaje.addEventListener('keyup', ({ keyCode }) => {
+
+    const mensaje = txtMensaje.value;
+    const uid = txtUid.value;
+
+    if (keyCode !== 13) { return; }
+    if (mensaje.length === 0) { return; }
+
+    socket.emit('enviar-mensaje', { mensaje, uid });
+
+    txtMensaje.value = '';
+
+});
+
 const main = async() => {
 
     await validarJWT();
 
-}
+};
 
 main();

@@ -12,15 +12,22 @@ const socketController = async(socket = new Socket, io) => {
     }
 
     //Agregar el usuario conectado
-    chatMensajes.conectarUsuario( usuario );
+    chatMensajes.conectarUsuario(usuario);
     io.emit('usuarios-activos', chatMensajes.usuariosArr);
+    socket.emit('recibir-mensajes', chatMensajes.ultimos10);
 
     //Limpliar cuando alguien se desconecta
-    socket.on('disconnect', ()=>{
+    socket.on('disconnect', () => {
         chatMensajes.desconectarUsuario(usuario.id);
         io.emit('usuarios-activos', chatMensajes.usuariosArr);
     });
-    
+
+    socket.on('enviar-mensaje', ({ uid, mensaje }) => {
+        chatMensajes.enviarMensaje(usuario.id, usuario.nombre, mensaje);
+        io.emit('recibir-mensajes', chatMensajes.ultimos10);
+    });
+
+
 
 };
 
