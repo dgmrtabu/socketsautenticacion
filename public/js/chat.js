@@ -1,70 +1,67 @@
-const url = (window.location.hostname.includes('localhost')) ?
-    'http://localhost:8080/api/auth/' :
-    'https://restserver-curso-fher.herokuapp.com/api/auth/';
-
+const url = window.location.hostname.includes("localhost")
+  ? "http://localhost:8080/api/auth/"
+  : "https://restserver-curso-fher.herokuapp.com/api/auth/";
 
 let usuario = null;
 let socket = null;
 
-txtUid = document.querySelector('#txtUid');
-txtMensaje = document.querySelector('#txtMensaje');
-ulUsuarios = document.querySelector('#ulUsuarios');
-ulMensajes = document.querySelector('#ulMensajes');
-btnSalir = document.querySelector('#btnSalir');
+txtUid = document.querySelector("#txtUid");
+txtMensaje = document.querySelector("#txtMensaje");
+ulUsuarios = document.querySelector("#ulUsuarios");
+ulMensajes = document.querySelector("#ulMensajes");
+btnSalir = document.querySelector("#btnSalir");
 
-const validarJWT = async() => {
-    const token = localStorage.getItem('token') || '';
+const validarJWT = async () => {
+  const token = localStorage.getItem("token") || "";
 
-    if (token.length <= 10) {
-        window.location = 'index.html';
-        throw new Error('No hay token en el servidor');
-    }
+  if (token.length <= 10) {
+    window.location = "index.html";
+    throw new Error("No hay token en el servidor");
+  }
 
-    const resp = await fetch(url, {
-        headers: { 'x-token': token }
-    });
+  const resp = await fetch(url, {
+    headers: { "x-token": token },
+  });
 
-    const { usuario: userDB, token: tokenDB } = await resp.json()
-    localStorage.setItem('token', tokenDB);
-    usuario = userDB;
-    document.title = usuario.nombre;
+  const { usuario: userDB, token: tokenDB } = await resp.json();
+  localStorage.setItem("token", tokenDB);
+  usuario = userDB;
+  document.title = usuario.nombre;
 
-    await conectarSoket();
+  await conectarSoket();
 };
 
-const conectarSoket = async() => {
-    socket = io({
-        'extraHeaders': {
-            'x-token': localStorage.getItem('token')
-        }
-    });
+const conectarSoket = async () => {
+  socket = io({
+    extraHeaders: {
+      "x-token": localStorage.getItem("token"),
+    },
+  });
 
-    socket.on('connect', () => {
-        console.log('Sockets online');
-    });
+  socket.on("connect", () => {
+    console.log("Sockets online");
+  });
 
-    socket.on('disconnect', () => {
-        console.log('Sockets offline');
-    });
+  socket.on("disconnect", () => {
+    console.log("Sockets offline");
+  });
 
-    socket.on('recibir-mensajes', dibujarMensajes);
+  socket.on("recibir-mensajes", dibujarMensajes);
 
-    socket.on('usuarios-activos', (payload) => {
-        // TODO:
-        dibujarUsuario(payload);
-    });
+  socket.on("usuarios-activos", (payload) => {
+    // TODO:
+    dibujarUsuario(payload);
+  });
 
-    socket.on('mensaje-privado', () => {
-        // TODO:
-    });
+  socket.on("mensaje-privado", (payload) => {
+    console.log("Privado", payload);
+  });
 };
-
 
 const dibujarUsuario = (usuarios = []) => {
-
-    let usersHtml = '';
-    usuarios.forEach(({ nombre, uid }) => {
-        usersHtml += `
+  let usersHtml = "";
+  usuarios.forEach(({ nombre, uid }) => {
+    usersHtml += `
         <li>
             <p>
                 <h5 class="text-success">${nombre}</h5>
@@ -72,16 +69,15 @@ const dibujarUsuario = (usuarios = []) => {
             </p>
         </li>
         `;
-    });
+  });
 
-    ulUsuarios.innerHTML = usersHtml;
-}
+  ulUsuarios.innerHTML = usersHtml;
+};
 
 const dibujarMensajes = (mensajes = []) => {
-
-    let mensajesHtml = '';
-    mensajes.forEach(({ nombre, mensaje }) => {
-        mensajesHtml += `
+  let mensajesHtml = "";
+  mensajes.forEach(({ nombre, mensaje }) => {
+    mensajesHtml += `
         <li>
             <p>
                 <h5 class="text-success">${nombre}</h5>
@@ -89,29 +85,29 @@ const dibujarMensajes = (mensajes = []) => {
             </p>
         </li>
         `;
-    });
+  });
 
-    ulMensajes.innerHTML = mensajesHtml;
-}
+  ulMensajes.innerHTML = mensajesHtml;
+};
 
-txtMensaje.addEventListener('keyup', ({ keyCode }) => {
+txtMensaje.addEventListener("keyup", ({ keyCode }) => {
+  const mensaje = txtMensaje.value;
+  const uid = txtUid.value;
 
-    const mensaje = txtMensaje.value;
-    const uid = txtUid.value;
+  if (keyCode !== 13) {
+    return;
+  }
+  if (mensaje.length === 0) {
+    return;
+  }
 
-    if (keyCode !== 13) { return; }
-    if (mensaje.length === 0) { return; }
+  socket.emit("enviar-mensaje", { mensaje, uid });
 
-    socket.emit('enviar-mensaje', { mensaje, uid });
-
-    txtMensaje.value = '';
-
+  txtMensaje.value = "";
 });
 
-const main = async() => {
-
-    await validarJWT();
-
+const main = async () => {
+  await validarJWT();
 };
 
 main();
